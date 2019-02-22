@@ -9,7 +9,7 @@
 import UIKit
 
 final class DismissAnimator: NSObject {
-    private weak var parent: SwipeToDismissController!
+    fileprivate weak var parent: SwipeToDismissController!
     required init(parent: SwipeToDismissController) {
         super.init()
         self.parent = parent
@@ -31,7 +31,7 @@ extension DismissAnimator: UIViewControllerAnimatedTransitioning {
         UIView.animate(
             withDuration: transitionDuration(using: transitionContext),
             delay: 0,
-            options: UIView.AnimationOptions.curveLinear,
+            options: .curveEaseOut,
             animations: {
                 from.view.transform = CGAffineTransform(translationX: 0, y: from.view.frame.height)
         }, completion: { [weak self] _ in

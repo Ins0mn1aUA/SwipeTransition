@@ -15,7 +15,7 @@ open class SwipeBackConfiguration {
     open var transitionDuration: TimeInterval = 0.3
 
     /// Factor of the background view parallax
-    open var parallaxFactor: CGFloat = 0.3
+    open var parallaxFactor: CGFloat = 0.6
 
     /// Dimness of the background view
     open var backViewDimness: CGFloat = 0.1

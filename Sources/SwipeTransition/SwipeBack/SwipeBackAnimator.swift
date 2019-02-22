@@ -9,8 +9,8 @@
 import UIKit
 
 final class SwipeBackAnimator: NSObject {
-    private weak var parent: SwipeBackController!
-    private weak var toView: UIView?
+    fileprivate weak var parent: SwipeBackController!
+    fileprivate weak var toView: UIView?
     required init(parent: SwipeBackController) {
         super.init()
         self.parent = parent
@@ -41,7 +41,7 @@ extension SwipeBackAnimator: UIViewControllerAnimatedTransitioning {
         UIView.animate(
             withDuration: transitionDuration(using: transitionContext),
             delay: 0,
-            options: UIView.AnimationOptions.curveLinear,
+            options: .curveEaseOut,
             animations: {
                 to.view.transform = .identity
                 from.view.transform = CGAffineTransform(translationX: to.view.frame.width, y: 0)

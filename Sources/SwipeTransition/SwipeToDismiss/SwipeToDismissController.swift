@@ -21,9 +21,9 @@ public final class SwipeToDismissController: NSObject {
         }
     }
 
-    private lazy var animator = DismissAnimator(parent: self)
-    private var context: SwipeToDismissContext!
-    private let panGestureRecognizer = OneFingerDirectionalPanGestureRecognizer(direction: .down)
+    fileprivate lazy var animator = DismissAnimator(parent: self)
+    fileprivate var context: SwipeToDismissContext!
+    fileprivate let panGestureRecognizer = OneFingerDirectionalPanGestureRecognizer(direction: .vertical)
 
     public override init() {
         super.init()
@@ -91,7 +91,7 @@ extension SwipeToDismissController: UIGestureRecognizerDelegate {
         return context.allowsTransitionStart
     }
 
-    private func baseY(of scrollView: UIScrollView) -> CGFloat {
+    fileprivate func baseY(of scrollView: UIScrollView) -> CGFloat {
         if #available(iOS 11.0, *) {
             return -scrollView.safeAreaInsets.top
         } else {
