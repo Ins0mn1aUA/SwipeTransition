@@ -98,7 +98,7 @@ extension SwipeBackController: UIGestureRecognizerDelegate {
 }
 
 extension SwipeBackController: UINavigationControllerDelegate {
-    public func navigationController(_ navigationController: UINavigationController, animationControllerFor operation: UINavigationControllerOperation, from fromVC: UIViewController, to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+    public func navigationController(_ navigationController: UINavigationController, animationControllerFor operation: UINavigationController.Operation, from fromVC: UIViewController, to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
         //NSLog("swipeback interactiveTransitionIfNeeded")
         return operation == .pop && context.isEnabled && context.interactiveTransition != nil ? animator : nil
     }
