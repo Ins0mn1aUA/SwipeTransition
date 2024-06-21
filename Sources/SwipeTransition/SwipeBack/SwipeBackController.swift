@@ -33,7 +33,7 @@ public final class SwipeBackController: NSObject {
 
     private lazy var animator = SwipeBackAnimator(parent: self)
     private let context: SwipeBackContext
-    private lazy var panGestureRecognizer = OneFingerDirectionalPanGestureRecognizer(direction: .right, target: self, action: #selector(handlePanGesture(_:)))
+    public lazy var panGestureRecognizer = OneFingerDirectionalPanGestureRecognizer(direction: .horizontal, target: self, action: #selector(handlePanGesture(_:)))
     private weak var navigationController: UINavigationController?
 
     public required init(navigationController: UINavigationController) {

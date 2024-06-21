@@ -9,8 +9,8 @@
 import UIKit
 
 final class SwipeBackAnimator: NSObject {
-    fileprivate weak var parent: SwipeBackController!
-    fileprivate weak var toView: UIView?
+    private weak var parent: SwipeBackController!
+    private weak var toView: UIView?
     required init(parent: SwipeBackController) {
         super.init()
         self.parent = parent
