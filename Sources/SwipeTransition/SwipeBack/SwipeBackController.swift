@@ -83,6 +83,7 @@ public final class SwipeBackController: NSObject {
     @objc private func handlePanGesture(_ recognizer: OneFingerDirectionalPanGestureRecognizer) {
         switch recognizer.state {
         case .began:
+            navigationController?.topViewController?.view.endEditing(true)
             context.startTransition()
         case .changed:
             context.updateTransition(recognizer: recognizer)
