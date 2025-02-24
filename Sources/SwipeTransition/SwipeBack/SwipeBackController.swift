@@ -15,6 +15,31 @@ public final class SwipeBackController: NSObject {
     public var onFinishTransition: ((UIViewControllerContextTransitioning) -> Void)?
     private var shouldBeginSwipeTransition: ((UIGestureRecognizer) -> Bool)?
 
+    public var radius:CGFloat = 0 {
+        didSet {
+            updateCorners()
+        }
+    }
+    
+    public var corners:UIRectCorner = .allCorners {
+        didSet {
+            updateCorners()
+        }
+    }
+    
+    public var cornersDisabled:Bool = true {
+        didSet {
+            updateCorners()
+        }
+    }
+    
+    private func updateCorners() {
+        if (!cornersDisabled) {
+            if let view = self.navigationController?.view {
+                roundCorners(corners, radius: radius, view: view)
+            }
+        }
+    }
     
     public var fakeGrabberView: UIView? {
         didSet {
@@ -142,6 +167,38 @@ extension SwipeBackController: UIGestureRecognizerDelegate {
 
     public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
         return !(touch.view is UISlider)
+    }
+    
+    @objc func roundCorners(_ corners: UIRectCorner, radius: CGFloat, view:UIView) {
+        if (view.layer.cornerRadius == radius && view.layer.maskedCorners == self.cornersToMask(corners)) {
+            return;
+        }
+        view.layer.cornerRadius = radius
+        view.layer.masksToBounds = true
+        view.layer.maskedCorners = self.cornersToMask(corners)
+    }
+    
+    @objc func cornersToMask(_ corners: UIRectCorner) -> CACornerMask {
+        if (corners.contains(.allCorners)) {
+            return [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+        } else if (corners.contains([.topRight, .topLeft])) {
+            return [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        } else if (corners.contains([.bottomLeft, .bottomRight])) {
+            return [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+        } else if (corners.contains([.topLeft, .bottomLeft])) {
+            return [.layerMinXMinYCorner, .layerMinXMaxYCorner]
+        } else if (corners.contains([.topRight, .bottomRight])) {
+            return [.layerMaxXMaxYCorner, .layerMaxXMinYCorner]
+        } else if (corners.contains(.topRight)) {
+            return [.layerMaxXMinYCorner]
+        } else if (corners.contains(.topLeft)) {
+            return [.layerMinXMinYCorner]
+        } else if (corners.contains(.bottomLeft)) {
+            return [.layerMinXMaxYCorner]
+        } else if (corners.contains(.bottomRight)) {
+            return [.layerMaxXMaxYCorner]
+        }
+        return []
     }
 }
 
