@@ -15,6 +15,27 @@ public final class SwipeBackController: NSObject {
     public var onFinishTransition: ((UIViewControllerContextTransitioning) -> Void)?
     private var shouldBeginSwipeTransition: ((UIGestureRecognizer) -> Bool)?
 
+    
+    public var fakeGrabberView: UIView? {
+        didSet {
+            oldValue?.removeFromSuperview() // Видаляємо старий fakeGrabberView, якщо він існував
+            
+            guard let fakeGrabberView = fakeGrabberView else { return } // Якщо нове значення nil — просто виходимо
+            
+            fakeGrabberView.translatesAutoresizingMaskIntoConstraints = false
+            self.navigationController?.view.addSubview(fakeGrabberView)
+            
+            if let view = self.navigationController?.view {
+                NSLayoutConstraint.activate([
+                    fakeGrabberView.topAnchor.constraint(equalTo: view.topAnchor),
+                    fakeGrabberView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                    fakeGrabberView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                    fakeGrabberView.heightAnchor.constraint(equalToConstant: 10)
+                ])
+            }
+        }
+    }
+    
     public var isEnabled: Bool {
         get { return context.isEnabled }
         set {
