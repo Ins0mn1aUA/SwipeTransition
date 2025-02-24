@@ -10,6 +10,7 @@ import UIKit
 
 @objcMembers
 public final class SwipeBackController: NSObject {
+    public var onWillStartTransition: (() -> Void) = { }
     public var onStartTransition: ((UIViewControllerContextTransitioning) -> Void)?
     public var onFinishTransition: ((UIViewControllerContextTransitioning) -> Void)?
     private var shouldBeginSwipeTransition: ((UIGestureRecognizer) -> Bool)?
@@ -32,13 +33,17 @@ public final class SwipeBackController: NSObject {
     }
 
     private lazy var animator = SwipeBackAnimator(parent: self)
-    private let context: SwipeBackContext
+    let context: SwipeBackContext
     public lazy var panGestureRecognizer = OneFingerDirectionalPanGestureRecognizer(direction: .right, target: self, action: #selector(handlePanGesture(_:)))
     private weak var navigationController: UINavigationController?
 
     public required init(navigationController: UINavigationController) {
         context = SwipeBackContext(target: navigationController)
         super.init()
+        
+        context.didStartTransitionHandler = { [weak self] in
+            self?.onWillStartTransition()
+        }
 
         self.navigationController = navigationController
         panGestureRecognizer.delegate = self
