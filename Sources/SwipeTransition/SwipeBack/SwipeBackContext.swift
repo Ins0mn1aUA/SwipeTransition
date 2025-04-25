@@ -15,7 +15,7 @@ final class SwipeBackContext: Context<UINavigationController>, ContextType {
             target?.delegate = navigationControllerDelegateProxy
         }
     }
-    var didStartTransitionHandler: (() -> Void)?
+//    var didStartTransitionHandler: (() -> Void)?
     weak var pageViewControllerGestureRecognizer: UIGestureRecognizer?
 
     override var allowsTransitionStart: Bool {
@@ -31,7 +31,7 @@ final class SwipeBackContext: Context<UINavigationController>, ContextType {
     }
 
     func didStartTransition() {
-        didStartTransitionHandler?()
+//        didStartTransitionHandler?()
         target?.popViewController(animated: true)
     }
 

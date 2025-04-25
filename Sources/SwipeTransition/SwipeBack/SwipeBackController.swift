@@ -10,57 +10,13 @@ import UIKit
 
 @objcMembers
 public final class SwipeBackController: NSObject {
-    public var onWillStartTransition: (() -> Void) = { }
     public var onStartTransition: ((UIViewControllerContextTransitioning) -> Void)?
     public var onFinishTransition: ((UIViewControllerContextTransitioning) -> Void)?
+    
+    public var isTransitionInProgress: Bool = false
+    
     private var shouldBeginSwipeTransition: ((UIGestureRecognizer) -> Bool)?
 
-    public var radius:CGFloat = 0 {
-        didSet {
-            updateCorners()
-        }
-    }
-    
-    public var corners:UIRectCorner = .allCorners {
-        didSet {
-            updateCorners()
-        }
-    }
-    
-    public var cornersDisabled:Bool = true {
-        didSet {
-            updateCorners()
-        }
-    }
-    
-    private func updateCorners() {
-        if (!cornersDisabled) {
-            if let view = self.navigationController?.view {
-                roundCorners(corners, radius: radius, view: view)
-            }
-        }
-    }
-    
-    public var fakeGrabberView: UIView? {
-        didSet {
-            oldValue?.removeFromSuperview() // Видаляємо старий fakeGrabberView, якщо він існував
-            
-            guard let fakeGrabberView = fakeGrabberView else { return } // Якщо нове значення nil — просто виходимо
-            
-            fakeGrabberView.translatesAutoresizingMaskIntoConstraints = false
-            self.navigationController?.view.addSubview(fakeGrabberView)
-            
-            if let view = self.navigationController?.view {
-                NSLayoutConstraint.activate([
-                    fakeGrabberView.topAnchor.constraint(equalTo: view.topAnchor),
-                    fakeGrabberView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                    fakeGrabberView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                    fakeGrabberView.heightAnchor.constraint(equalToConstant: 10)
-                ])
-            }
-        }
-    }
-    
     public var isEnabled: Bool {
         get { return context.isEnabled }
         set {
@@ -79,17 +35,15 @@ public final class SwipeBackController: NSObject {
     }
 
     private lazy var animator = SwipeBackAnimator(parent: self)
-    let context: SwipeBackContext
+    private let context: SwipeBackContext
     public lazy var panGestureRecognizer = OneFingerDirectionalPanGestureRecognizer(direction: .right, target: self, action: #selector(handlePanGesture(_:)))
     private weak var navigationController: UINavigationController?
+    
+    private var fromControllerTabBarHidden: Bool = false
 
     public required init(navigationController: UINavigationController) {
         context = SwipeBackContext(target: navigationController)
         super.init()
-        
-        context.didStartTransitionHandler = { [weak self] in
-            self?.onWillStartTransition()
-        }
 
         self.navigationController = navigationController
         panGestureRecognizer.delegate = self
@@ -99,6 +53,12 @@ public final class SwipeBackController: NSObject {
 
         // Prioritize the default edge swipe over the custom swipe back
         navigationController.interactivePopGestureRecognizer.map { panGestureRecognizer.require(toFail: $0) }
+        
+        onStartTransition = { transitionContext in
+            guard let fromVC = transitionContext.viewController(forKey: .from) else { return }
+            let notificationName = Notification.Name(rawValue: "prepareForTabBarTransition")
+            NotificationCenter.default.post(name: notificationName, object: fromVC)
+        }
     }
 
     deinit {
@@ -132,20 +92,39 @@ public final class SwipeBackController: NSObject {
     }
 
     @objc private func handlePanGesture(_ recognizer: OneFingerDirectionalPanGestureRecognizer) {
+        
+        let progress = recognizer.translation(in: recognizer.view).x / (recognizer.view?.bounds.width ?? 0)
+        
         switch recognizer.state {
         case .began:
             navigationController?.topViewController?.view.endEditing(true)
+            isTransitionInProgress = true
             context.startTransition()
         case .changed:
             context.updateTransition(recognizer: recognizer)
+            
+            
+            let notificationName = Notification.Name(rawValue: "setTabBarTransitionProgress")
+            NotificationCenter.default.post(name: notificationName, object: progress)
+            
         case .ended:
+            
+            isTransitionInProgress = false
+            
             if context.allowsTransitionFinish(recognizer: recognizer) {
                 context.finishTransition()
+                let notificationName = Notification.Name(rawValue: "updateTabBarTransitionOnEnded") //setTabBarTransitionShown")
+                NotificationCenter.default.post(name: notificationName, object: nil)
             } else {
                 fallthrough
             }
         case .cancelled:
+            
+            isTransitionInProgress = false
+            
             context.cancelTransition()
+            let notificationName = Notification.Name(rawValue: "updateTabBarTransitionOnCanceled") // setTabBarTransitionHidden
+            NotificationCenter.default.post(name: notificationName, object: nil)
         default:
             break
         }
@@ -167,38 +146,6 @@ extension SwipeBackController: UIGestureRecognizerDelegate {
 
     public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
         return !(touch.view is UISlider)
-    }
-    
-    @objc func roundCorners(_ corners: UIRectCorner, radius: CGFloat, view:UIView) {
-        if (view.layer.cornerRadius == radius && view.layer.maskedCorners == self.cornersToMask(corners)) {
-            return;
-        }
-        view.layer.cornerRadius = radius
-        view.layer.masksToBounds = true
-        view.layer.maskedCorners = self.cornersToMask(corners)
-    }
-    
-    @objc func cornersToMask(_ corners: UIRectCorner) -> CACornerMask {
-        if (corners.contains(.allCorners)) {
-            return [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
-        } else if (corners.contains([.topRight, .topLeft])) {
-            return [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        } else if (corners.contains([.bottomLeft, .bottomRight])) {
-            return [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
-        } else if (corners.contains([.topLeft, .bottomLeft])) {
-            return [.layerMinXMinYCorner, .layerMinXMaxYCorner]
-        } else if (corners.contains([.topRight, .bottomRight])) {
-            return [.layerMaxXMaxYCorner, .layerMaxXMinYCorner]
-        } else if (corners.contains(.topRight)) {
-            return [.layerMaxXMinYCorner]
-        } else if (corners.contains(.topLeft)) {
-            return [.layerMinXMinYCorner]
-        } else if (corners.contains(.bottomLeft)) {
-            return [.layerMinXMaxYCorner]
-        } else if (corners.contains(.bottomRight)) {
-            return [.layerMaxXMaxYCorner]
-        }
-        return []
     }
 }
 
