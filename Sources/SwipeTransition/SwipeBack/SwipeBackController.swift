@@ -11,9 +11,11 @@ import UIKit
 @objcMembers
 public final class SwipeBackController: NSObject {
     public var onStartTransition: ((UIViewControllerContextTransitioning) -> Void)?
+    public var onChangeTransitionProgress: ((CGFloat) -> Void?)?
     public var onFinishTransition: ((UIViewControllerContextTransitioning) -> Void)?
     
     public var isTransitionInProgress: Bool = false
+    public var transitionProgress: CGFloat = 0
     
     private var shouldBeginSwipeTransition: ((UIGestureRecognizer) -> Bool)?
 
@@ -99,10 +101,11 @@ public final class SwipeBackController: NSObject {
         case .began:
             navigationController?.topViewController?.view.endEditing(true)
             isTransitionInProgress = true
+            
             context.startTransition()
         case .changed:
             context.updateTransition(recognizer: recognizer)
-            
+            onChangeTransitionProgress?(progress)
             
             let notificationName = Notification.Name(rawValue: "setTabBarTransitionProgress")
             NotificationCenter.default.post(name: notificationName, object: progress)
