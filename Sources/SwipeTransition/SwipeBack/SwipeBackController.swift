@@ -14,6 +14,9 @@ public final class SwipeBackController: NSObject {
     public var onChangeTransitionProgress: ((CGFloat) -> Void?)?
     public var onFinishTransition: ((UIViewControllerContextTransitioning) -> Void)?
     
+    public var onWillCancelTransition: (() -> Void)?
+    public var onWillFinishTransition: (() -> Void)?
+    
     public var isTransitionInProgress: Bool = false
     public var transitionProgress: CGFloat = 0
     
@@ -113,6 +116,7 @@ public final class SwipeBackController: NSObject {
         case .ended:
             
             isTransitionInProgress = false
+            onWillFinishTransition?()
             
             if context.allowsTransitionFinish(recognizer: recognizer) {
                 context.finishTransition()
@@ -124,6 +128,7 @@ public final class SwipeBackController: NSObject {
         case .cancelled:
             
             isTransitionInProgress = false
+            onWillCancelTransition?()
             
             context.cancelTransition()
             let notificationName = Notification.Name(rawValue: "updateTabBarTransitionOnCanceled") // setTabBarTransitionHidden

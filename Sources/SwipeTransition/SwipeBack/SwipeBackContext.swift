@@ -34,6 +34,10 @@ final class SwipeBackContext: Context<UINavigationController>, ContextType {
 //        didStartTransitionHandler?()
         target?.popViewController(animated: true)
     }
+    
+    func didCancelTransition() {}
+    
+    func didFinishTransition() {}
 
     func updateTransition(recognizer: UIPanGestureRecognizer) {
         guard let view = targetView, isEnabled else { return }
