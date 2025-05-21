@@ -116,10 +116,10 @@ public final class SwipeBackController: NSObject {
         case .ended:
             
             isTransitionInProgress = false
-            onWillFinishTransition?()
             
             if context.allowsTransitionFinish(recognizer: recognizer) {
                 context.finishTransition()
+                onWillFinishTransition?()
                 let notificationName = Notification.Name(rawValue: "updateTabBarTransitionOnEnded") //setTabBarTransitionShown")
                 NotificationCenter.default.post(name: notificationName, object: nil)
             } else {
